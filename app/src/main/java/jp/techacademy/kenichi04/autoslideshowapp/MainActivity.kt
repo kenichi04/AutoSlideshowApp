@@ -58,6 +58,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             PERMISSION_REQUEST_CODE ->
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     getContentsImageUri()
+                } else {
+                    next_button.isEnabled = false
+                    back_button.isEnabled = false
+                    play_button.isEnabled = false
                 }
         }
     }
@@ -102,7 +106,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             } while(cursor.moveToNext())
         }
         Log.d("uriArray", "${uriArray}")
-        // 最初の画像を表示
+
+        // 画像がない場合、@drawableのuriを入れる
+        if(uriArray.size == 0) {
+            val uri = Uri.parse("android.resource://jp.techacademy.kenichi04.autoslideshowapp/drawable/no_image")
+            Log.d("uriArray", "$uri")
+            uriArray.add(uri)
+            next_button.isEnabled = false
+            back_button.isEnabled = false
+            play_button.isEnabled = false
+        }
+
         imageView.setImageURI(uriArray[0])
 
         cursor.close()
@@ -134,9 +148,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             timer!!.cancel()
             timer = null
         }
-
-
     }
-
 
 }
