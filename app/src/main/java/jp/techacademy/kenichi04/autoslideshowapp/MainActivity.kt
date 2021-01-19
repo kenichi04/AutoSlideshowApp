@@ -7,18 +7,23 @@ import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private val PERMISSION_REQUEST_CODE = 10
     // 画像URIを格納するリスト
-    var uriArray = arrayListOf<Uri>()
+    private var uriArray = arrayListOf<Uri>()
     // 選択中のuri
-    var uriNum = 0
+    private var uriNum = 0
+
+    private var timer: Timer? = null
+    private var handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +75,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 imageView.setImageURI(uriArray[uriNum])
             }
             R.id.play_button -> {
-
+                slideshow()
             }
         }
     }
@@ -91,7 +96,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 val id = cursor.getLong(fieldIndex)
                 val imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
 
-                // リストに追加
+                // uriをリストに追加
                 uriArray.add(imageUri)
 
             } while(cursor.moveToNext())
@@ -101,6 +106,36 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         imageView.setImageURI(uriArray[0])
 
         cursor.close()
+    }
+
+    private fun slideshow() {
+        // 再生ボタン
+        if (timer == null) {
+            play_button.text = "停止"
+            next_button.isEnabled = false
+            back_button.isEnabled = false
+
+            timer = Timer()
+            timer!!.schedule(object : TimerTask() {
+                override fun run() {
+                    handler.post {
+                        imageView.setImageURI(uriArray[uriNum])
+                    }
+                    uriNum++
+                    if(uriNum >= uriArray.size) uriNum = 0
+                }
+            }, 2000, 2000)
+        // 停止ボタン
+        } else {
+            play_button.text = "再生"
+            next_button.isEnabled = true
+            back_button.isEnabled = true
+
+            timer!!.cancel()
+            timer = null
+        }
+
+
     }
 
 
